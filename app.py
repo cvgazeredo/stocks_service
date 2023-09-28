@@ -15,12 +15,9 @@ app.run(debug=True)
 # CORS(app)
 # Session(app)
 
-# Make sure api key is set
-# if not os.environ.get("API KEY"):
-#     raise RuntimeError("API_KEY not set")
 
 # Tags for documentation
-home_tag = Tag(name="Documentation - Stock Microservice", description="Select doc: Swagger, Redoc")
+home_tag = Tag(name="Documentation - Stock Microservice", description="Select doc: Swagger, Redoc ou RapiDoc")
 stock_tag = Tag(name="Stock", description="Details of stock")
 
 
@@ -36,6 +33,8 @@ def home():
 def get_stock(query: SearchStockSchema):
 
     symbol = query.symbol
+
+    # Get stock information from external API
     stock = lookup(symbol)
 
     if not stock or not stock.get("Global Quote"):
@@ -53,7 +52,30 @@ def get_stock(query: SearchStockSchema):
         return list_stock(StockSchema(**stock_data)), 200
 
 
+@app.get("/stock/list", tags=[stock_tag],
+         responses={"200": StockSchema, "404": ErrorSchema})
+def list_stocks():
 
-# List most popular stocks and it's prices
+    # List of 5 most popular stocks on NASDAQ
+    list_popular_tickers = ["TSLA", "AMZN", "AAPL", "GOOGL", "NFLX"]
 
+    list_popular_stocks_data = {}
 
+    # Get current price of each stock
+    for ticker in list_popular_tickers:
+
+        stock = lookup(ticker)
+
+        stock_symbol = stock.get("Global Quote").get("01. symbol")
+        stock_price = float(stock.get("Global Quote").get("05. price"))
+
+        stock_data = {
+            "symbol": stock_symbol.upper(),
+            "price": stock_price
+        }
+
+        list_popular_stocks_data[ticker] = stock_data
+
+    print(list_popular_stocks_data)
+
+    return {"Most popular stocks on Nasdaq": list_popular_stocks_data}

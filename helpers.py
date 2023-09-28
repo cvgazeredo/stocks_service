@@ -4,9 +4,12 @@ import requests
 
 def lookup(symbol):
 
+    api_key = os.environ.get("API_KEY")
+    if not api_key:
+        raise ValueError("API_KEY environment variable is not set")
+
     # Contact External API
     try:
-        api_key = os.environ.get("API_KEY")
         url = "https://www.alphavantage.co/query"
 
         querystring = {
@@ -23,15 +26,4 @@ def lookup(symbol):
     except requests.RequestException:
         return None
 
-    # Parse the response
-    # try:
-    #     quote = response.json()
-    #     # symbol = quote
-    #     # price = quote[]
-    #     return {
-    #         "name": quote["name"],
-    #         "status": quote["status"]
-    #     }
-    #
-    # except (KeyError, TypeError, ValueError):
-    #     return None
+
